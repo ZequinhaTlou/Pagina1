@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle Financeiro Inteligente</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+        /* Variáveis CSS para os temas */
+        :root {
+            /* Tema Claro Padrão */
+            --bg-color: #e0f2f7; /* Fundo geral */
+            --container-bg: #ffffff; /* Fundo do container principal */
+            --container-border: #cce7ed;
+            --header-color: #26a69a; /* Título principal */
+            --card-bg: #f0f8ff; /* Fundo dos cards de input */
+            --card-border: #d0e8f2;
+            --text-color: #333; /* Cor do texto geral */
+            --secondary-text-color: #555;
+            --input-border: #b0bec5;
+            --button-bg: #26a69a;
+            --button-hover-bg: #00897b;
+            --summary-bg: #e8f5e9; /* Fundo do resumo */
+            --summary-text: #2e7d32;
+            --summary-border: #a5d6a7;
+            --value-color: #1b5e20; /* Cor dos valores no resumo */
+            --table-header-bg: #f5f5f5;
+            --table-row-even-bg: #f9f9f9;
+            --table-border: #e0e0e0;
+            --edit-btn-bg: #ffb300;
+            --edit-btn-hover-bg: #fb8c00;
+            --delete-btn-bg: #ef5350;
+            --delete-btn-hover-bg: #e53935;
+            --pdf-btn-bg: #1976d2;
+            --pdf-btn-hover-bg: #1565c0;
+            --footer-bg: #a7d9de;
+        }
+
+        /* Tema Escuro */
+        body.dark-theme {
+            --bg-color: #2c3e50; /* Azul escuro */
+            --container-bg: #34495e; /* Cinza escuro */
+            --container-border: #4a6572;
+            --header-color: #66bb6a; /* Verde mais claro */
+            --card-bg: #3b5066;
+            --card-border: #4a6572;
+            --text-color: #ecf0f1; /* Branco off-white */
+            --secondary-text-color: #bdc3c7;
+            --input-border: #7f8c8d;
+            --button-bg: #66bb6a; /* Verde mais claro */
+            --button-hover-bg: #4caf50;
+            --summary-bg: #425b6e; /* Fundo do resumo */
+            --summary-text: #a5d6a7;
+            --summary-border: #66bb6a;
+            --value-color: #c8e6c9; /* Verde bem claro para valores */
+            --table-header-bg: #4a6572;
+            --table-row-even-bg: #3b5066;
+            --table-border: #5a728a;
+            --edit-btn-bg: #ffa000;
+            --edit-btn-hover-bg: #f57c00;
+            --delete-btn-bg: #e74c3c;
+            --delete-btn-hover-bg: #c0392b;
+            --pdf-btn-bg: #2196f3;
+            --pdf-btn-hover-bg: #1976d2;
+            --footer-bg: #4a6572;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease, color 0.3s ease; /* Transição suave para mudança de tema */
+        }
+        .container {
+            background: var(--container-bg);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            max-width: 700px;
+            width: 100%;
+            border: 1px solid var(--container-border);
+            margin-bottom: 20px;
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            position: relative; /* Para posicionar o botão de tema */
+        }
+        h1 {
+            text-align: center;
+            color: var(--header-color);
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            font-weight: 700;
+            transition: color 0.3s ease;
+        }
+        .card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--card-border);
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        h2 {
+            margin-top: 0;
+            color: var(--button-bg); /* Use a cor do botão para subtítulos */
+            font-size: 1.6em;
+            margin-bottom: 15px;
+            transition: color 0.3s ease;
+        }
+        input[type="number"], 
+        input[type="text"] {
+            width: calc(100% - 24px);
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid var(--input-border);
+            border-radius: 6px;
+            font-size: 1em;
+            box-sizing: border-box;
+            background-color: var(--container-bg); /* Garante que o input mude de cor com o tema */
+            color: var(--text-color);
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+        button {
+            padding: 12px 20px;
+            background-color: var(--button-bg);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 700;
+            margin-top: 10px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        button:hover {
+            background-color: var(--button-hover-bg);
+            transform: translateY(-2px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        #adicionarBtn {
+            width: 100%;
+        }
+        .summary {
+            background: var(--summary-bg);
+            color: var(--summary-text);
+            border: 1px solid var(--summary-border);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .summary p {
+            margin: 8px 0;
+            font-size: 1.1em;
+        }
+        .value {
+            font-weight: 700;
+            font-size: 1.3em;
+            color: var(--value-color);
+            transition: color 0.3s ease;
+        }
+        .despesas-list {
+            margin-top: 25px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background-color: var(--container-bg); /* A tabela também segue o tema do container */
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        table th, table td {
+            border: 1px solid var(--table-border);
+            padding: 15px;
+            text-align: left;
+            transition: border-color 0.3s ease, color 0.3s ease;
+        }
+        table th {
+            background-color: var(--table-header-bg);
+            color: var(--secondary-text-color);
+            font-weight: 700;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        table tbody tr:nth-child(even) {
+            background-color: var(--table-row-even-bg);
+            transition: background-color 0.3s ease;
+        }
+        .actions button {
+            padding: 8px 12px;
+            font-size: 0.9em;
+            margin-right: 8px;
+            margin-top: 0;
+            display: inline-block;
+        }
+        .edit-btn {
+            background-color: var(--edit-btn-bg);
+        }
+        .edit-btn:hover {
+            background-color: var(--edit-btn-hover-bg);
+        }
+        .delete-btn {
+            background-color: var(--delete-btn-bg);
+        }
+        .delete-btn:hover {
+            background-color: var(--delete-btn-hover-bg);
+        }
+        .pdf-btn {
+            background-color: var(--pdf-btn-bg);
+        }
+        .pdf-btn:hover {
+            background-color: var(--pdf-btn-hover-bg);
+        }
+
+        /* Estilo para o rodapé */
+        footer {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--footer-bg);
+            color: var(--secondary-text-color);
+            text-align: center;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            font-size: 0.9em;
+            width: 100%;
+            max-width: 700px;
+            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Botão de Tema */
+        #themeToggle {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: var(--button-bg);
+            color: white;
+            border: none;
+            border-radius: 50%; /* Faz o botão redondo */
+            width: 40px;
+            height: 40px;
+            font-size: 1.2em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            z-index: 10; /* Garante que o botão fique acima de outros elementos */
+        }
+        #themeToggle:hover {
+            background-color: var(--button-hover-bg);
+            transform: scale(1.05);
+        }
+        #themeToggle:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <button id="themeToggle">☀️</button>
+
+        <h1>Controle Financeiro Inteligente</h1>
+        
+        <div class="card">
+            <h2>💰 Seu Salário Total</h2>
+            <input type="number" id="salario" placeholder="Digite o valor do seu salário" min="0">
+        </div>
+
+        <div class="card">
+            <h2>➕ Adicionar Nova Despesa</h2>
+            <input type="text" id="nomeDespesa" placeholder="Nome da despesa (ex: Aluguel)" required>
+            <input type="number" id="valorDespesa" placeholder="Valor da despesa (ex: 500.00)" min="0" required>
+            <button id="adicionarBtn">Adicionar Despesa</button>
+        </div>
+
+        <div class="summary">
+            <p>Saldo Restante: <span id="saldoAtual" class="value">R$ 0,00</span></p>
+            <p>Total de Despesas: <span id="totalDespesas" class="value">R$ 0,00</span></p>
+        </div>
+
+        <div class="despesas-list">
+            <h2>🧾 Suas Despesas Registradas</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Despesa</th>
+                        <th>Valor</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaDespesas">
+                    </tbody>
+            </table>
+        </div>
+
+        <button id="salvarPdfBtn" class="pdf-btn">⬇️ Salvar Relatório em PDF</button>
+    </div>
+
+    <footer>
+        Criado por Zeca 😃
+    </footer>
+
+    <script>
+        // Acessa os elementos HTML
+        const salarioInput = document.getElementById('salario');
+        const nomeDespesaInput = document.getElementById('nomeDespesa');
+        const valorDespesaInput = document.getElementById('valorDespesa');
+        const adicionarBtn = document.getElementById('adicionarBtn');
+        const tabelaDespesasBody = document.getElementById('tabelaDespesas');
+        const saldoAtualSpan = document.getElementById('saldoAtual');
+        const totalDespesasSpan = document.getElementById('totalDespesas');
+        const salvarPdfBtn = document.getElementById('salvarPdfBtn');
+        const themeToggle = document.getElementById('themeToggle'); // Novo: botão de tema
+
+        // Array para armazenar as despesas
+        let despesas = [];
+
+        // Chaves para armazenar no localStorage
+        const STORAGE_SALARIO_KEY = 'salario_total';
+        const STORAGE_DESPESAS_KEY = 'lista_despesas';
+        const STORAGE_THEME_KEY = 'tema_preferido'; // Nova chave para o tema
+
+        // --- Funções de Salvar/Carregar Dados ---
+        function salvarDados() {
+            localStorage.setItem(STORAGE_SALARIO_KEY, salarioInput.value);
+            localStorage.setItem(STORAGE_DESPESAS_KEY, JSON.stringify(despesas));
+        }
+
+        function carregarDados() {
+            const salarioSalvo = localStorage.getItem(STORAGE_SALARIO_KEY);
+            const despesasSalvas = localStorage.getItem(STORAGE_DESPESAS_KEY);
+            const temaSalvo = localStorage.getItem(STORAGE_THEME_KEY); // Carrega o tema
+
+            if (salarioSalvo) {
+                salarioInput.value = salarioSalvo;
+            }
+            if (despesasSalvas) {
+                despesas = JSON.parse(despesasSalvas);
+            }
+            // Aplica o tema salvo ou o tema padrão
+            if (temaSalvo) {
+                document.body.classList.add(temaSalvo);
+                themeToggle.textContent = temaSalvo === 'dark-theme' ? '☀️' : '🌙';
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                // Se não houver preferência salva, verifica a preferência do sistema
+                document.body.classList.add('dark-theme');
+                themeToggle.textContent = '☀️';
+            } else {
+                themeToggle.textContent = '🌙';
+            }
+        }
+
+        // --- Funções de Lógica da Aplicação ---
+        function atualizarResumo() {
+            const salario = parseFloat(salarioInput.value) || 0;
+            const totalDespesas = despesas.reduce((total, despesa) => total + despesa.valor, 0);
+            const saldo = salario - totalDespesas;
+
+            saldoAtualSpan.textContent = `R$ ${saldo.toFixed(2).replace('.', ',')}`;
+            totalDespesasSpan.textContent = `R$ ${totalDespesas.toFixed(2).replace('.', ',')}`;
+            
+            salvarDados(); // Salva os dados toda vez que o resumo é atualizado
+        }
+
+        function renderizarTabela() {
+            tabelaDespesasBody.innerHTML = '';
+
+            despesas.forEach((despesa, index) => {
+                const row = tabelaDespesasBody.insertRow();
+                row.innerHTML = `
+                    <td>${despesa.nome}</td>
+                    <td>R$ ${despesa.valor.toFixed(2).replace('.', ',')}</td>
+                    <td class="actions">
+                        <button class="edit-btn" data-index="${index}">Editar</button>
+                        <button class="delete-btn" data-index="${index}">Excluir</button>
+                    </td>
+                `;
+            });
+            atualizarResumo(); // Garante que o resumo seja atualizado após renderizar
+        }
+
+        // --- Event Listeners ---
+        adicionarBtn.addEventListener('click', () => {
+            const nome = nomeDespesaInput.value.trim();
+            const valor = parseFloat(valorDespesaInput.value);
+
+            if (nome && !isNaN(valor) && valor >= 0) {
+                despesas.push({ nome, valor });
+                renderizarTabela();
+                nomeDespesaInput.value = '';
+                valorDespesaInput.value = '';
+            } else {
+                alert('Por favor, preencha o nome e um valor válido para a despesa.');
+            }
+        });
+
+        tabelaDespesasBody.addEventListener('click', (event) => {
+            const target = event.target;
+            const index = target.dataset.index;
+
+            if (target.classList.contains('delete-btn')) {
+                if (confirm('Tem certeza que deseja excluir esta despesa?')) {
+                    despesas.splice(index, 1);
+                    renderizarTabela();
+                }
+            } 
+            
+            if (target.classList.contains('edit-btn')) {
+                const despesa = despesas[index];
+                const novoNome = prompt('Novo nome da despesa:', despesa.nome);
+                const novoValorStr = prompt('Novo valor da despesa:', despesa.valor.toFixed(2));
+
+                if (novoNome !== null && novoValorStr !== null) {
+                    const novoValor = parseFloat(novoValorStr.replace(',', '.'));
+                    if (!isNaN(novoValor) && novoValor >= 0) {
+                        despesas[index] = { nome: novoNome, valor: novoValor };
+                        renderizarTabela();
+                    } else {
+                        alert('Valor inválido! Por favor, insira um número.');
+                    }
+                }
+            }
+        });
+
+        salarioInput.addEventListener('input', atualizarResumo);
+
+        // --- Lógica de alternância de tema ---
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+            const currentTheme = document.body.classList.contains('dark-theme') ? 'dark-theme' : '';
+            localStorage.setItem(STORAGE_THEME_KEY, currentTheme); // Salva a preferência
+            themeToggle.textContent = currentTheme === 'dark-theme' ? '☀️' : '🌙'; // Atualiza o ícone
+        });
+
+        salvarPdfBtn.addEventListener('click', () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const now = new Date();
+            const dia = String(now.getDate()).padStart(2, '0');
+            const mes = String(now.getMonth() + 1).padStart(2, '0');
+            const ano = String(now.getFullYear()).slice(2); 
+            const hora = String(now.getHours()).padStart(2, '0');
+            const minuto = String(now.getMinutes()).padStart(2, '0');
+
+            // Formato para exibição no PDF: dd/mm/aa HH:MM
+            const dataHoraRelatorio = `${dia}/${mes}/${ano} ${hora}:${minuto}`;
+
+            doc.setFontSize(20);
+            doc.setTextColor(38, 166, 154);
+            doc.text('Relatório Financeiro', 105, 20, null, null, 'center');
+
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            // Adiciona a data e hora do relatório abaixo do título principal no PDF
+            doc.text(`Gerado em: ${dataHoraRelatorio}`, 105, 28, null, null, 'center');
+
+
+            doc.setFontSize(14);
+            doc.setTextColor(51, 51, 51);
+            doc.text(`Salário Total: ${salarioInput.value ? 'R$ ' + parseFloat(salarioInput.value).toFixed(2).replace('.', ',') : 'R$ 0,00'}`, 20, 45);
+            doc.text(`Total de Despesas: ${totalDespesasSpan.textContent}`, 20, 55);
+            doc.text(`Saldo Restante: ${saldoAtualSpan.textContent}`, 20, 65);
+
+            let y = 80;
+            doc.setFontSize(16);
+            doc.setTextColor(77, 182, 172);
+            doc.text('Lista de Despesas:', 20, y);
+            y += 10;
+
+            if (despesas.length > 0) {
+                doc.setFontSize(12);
+                doc.setTextColor(51, 51, 51);
+                despesas.forEach(despesa => {
+                    doc.text(`- ${despesa.nome}: R$ ${despesa.valor.toFixed(2).replace('.', ',')}`, 25, y);
+                    y += 7;
+                });
+            } else {
+                doc.setFontSize(12);
+                doc.setTextColor(150, 150, 150);
+                doc.text('Nenhuma despesa registrada para este relatório.', 25, y);
+            }
+
+            // Adiciona o rodapé ao PDF
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text('Criado por Zeca 😃', 105, doc.internal.pageSize.height - 15, null, null, 'center');
+
+            // --- Lógica para salvar o PDF com data e hora no nome do arquivo (mantido) ---
+            const anoCompleto = now.getFullYear();
+            const dataHoraFilename = `${anoCompleto}-${mes}-${dia}_${hora}-${minuto}`;
+            const filename = `relatorio_financeiro_
